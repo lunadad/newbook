@@ -61,7 +61,9 @@ export async function scrapeYes24ProductList(
 
 export const scrapeYes24NewProduct = () =>
   scrapeYes24ProductList(
-    "https://www.yes24.com/product/category/newproduct?categoryNumber=001001046",
+    // sortTp=01: 등록일순(최신순). 실측 결과 기본값과 동일하나, 사이트 기본값 변경에
+    // 대비해 명시적으로 지정한다(사용자 요청: 최신순 정렬 보장).
+    "https://www.yes24.com/product/category/newproduct?categoryNumber=001001046&sortTp=01",
     30,
   );
 

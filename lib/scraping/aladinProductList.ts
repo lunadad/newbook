@@ -72,7 +72,9 @@ export async function scrapeAladinProductListPage(
 
 export const scrapeAladinNewFallback = () =>
   scrapeAladinProductListPage(
-    `https://www.aladin.co.kr/shop/common/wnew.aspx?BranchType=7&CID=${ALADIN_LITERATURE_CID}`,
+    // SortOrder=5: 출간일순(최신순). 실측 결과 기본값(SortOrder=2)은 출간일 기준으로
+    // 정렬되어 있지 않아(월 순서가 뒤섞임) 최신순을 보장하려면 명시가 필요하다.
+    `https://www.aladin.co.kr/shop/common/wnew.aspx?BranchType=7&CID=${ALADIN_LITERATURE_CID}&SortOrder=5`,
     30,
   );
 
