@@ -38,7 +38,7 @@ export default async function HomePage() {
             <VendorCard
               key={section.vendor}
               vendor={section.vendor}
-              items={section.items.slice(0, 2)}
+              items={section.items.slice(0, 4)}
               status={section.status}
             />
           ))}
