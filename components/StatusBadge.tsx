@@ -12,28 +12,17 @@ const DOT_COLOR: Record<VendorStatus["state"], string> = {
   failed: "bg-status-failed",
 };
 
-function formatRelative(date: Date | null): string {
-  if (!date) return "기록 없음";
-  const diffMs = Date.now() - date.getTime();
-  const minutes = Math.round(diffMs / 60_000);
-  if (minutes < 1) return "방금 전 갱신";
-  if (minutes < 60) return `${minutes}분 전 갱신`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}시간 전 갱신`;
-  const days = Math.round(hours / 24);
-  return `${days}일 전 갱신`;
-}
-
 export function StatusBadge({ status }: { status: VendorStatus }) {
-  const title = [formatRelative(status.lastFinishedAt), status.note].filter(Boolean).join(" · ");
+  const timeLabel = status.lastFinishedLabel ?? "기록 없음";
 
   return (
     <span
-      title={title}
-      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-xs text-foreground-muted"
+      title={status.note ?? undefined}
+      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-xs text-foreground-muted whitespace-nowrap"
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${DOT_COLOR[status.state]}`} />
+      <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${DOT_COLOR[status.state]}`} />
       {LABEL[status.state]}
+      <span className="text-foreground-subtle">{timeLabel}</span>
     </span>
   );
 }

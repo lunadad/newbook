@@ -7,14 +7,39 @@ export type StatusState = "ok" | "stale" | "failed";
 export interface VendorStatus {
   state: StatusState;
   lastFinishedAt: Date | null;
+  /** 서버에서 미리 포맷한 KST 갱신 시각. 클라이언트 컴포넌트(VendorTabs) 안에서 렌더되므로
+   * Date.now() 기반 상대시간을 쓰면 하이드레이션 불일치가 나 절대시각 문자열로 내려보낸다. */
+  lastFinishedLabel: string | null;
   note?: string;
 }
 
-const EXPECTED_INTERVAL_MS: Record<JobType, number> = {
-  today_book: 12 * 60 * 60 * 1000,
-  new_release: 30 * 60 * 1000,
-  bestseller: 60 * 60 * 1000,
+/**
+ * "갱신 지연" 판정 임계값.
+ *
+ * cron에 적은 주기가 아니라 **GitHub Actions가 실제로 실행해 준 간격**을 기준으로 잡는다.
+ * 실측(2026-07-23 프로덕션 scrape_run): 신상품은 30분 주기 cron인데 약 86분, 베스트셀러는 1시간 주기인데
+ * 약 109분 간격으로 실행됐다 — GitHub이 스케줄 워크플로우를 부하에 따라 지연시키기 때문(공식 문서에도
+ * 명시된 상시 리스크, design.md §7-#2). cron 주기의 2배를 쓰면 정상 동작 중에도 항상 "지연"으로
+ * 표시되므로, 실측 간격에 여유를 더한 값을 사용한다.
+ */
+const STALE_THRESHOLD_MS: Record<JobType, number> = {
+  today_book: 26 * 60 * 60 * 1000, // 하루 2회(12시간 주기) + 지연 여유
+  new_release: 3 * 60 * 60 * 1000, // 실측 ~86분 + 여유
+  bestseller: 4 * 60 * 60 * 1000, // 실측 ~109분 + 여유
 };
+
+const KST_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
+  timeZone: "Asia/Seoul",
+  month: "numeric",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
+function formatKst(date: Date): string {
+  return KST_FORMATTER.format(date);
+}
 
 export async function getVendorStatus(jobType: JobType, vendor: Vendor): Promise<VendorStatus> {
   const [latest] = await db
@@ -25,22 +50,30 @@ export async function getVendorStatus(jobType: JobType, vendor: Vendor): Promise
     .limit(1);
 
   if (!latest) {
-    return { state: "stale", lastFinishedAt: null, note: "아직 수집 기록 없음" };
+    return {
+      state: "stale",
+      lastFinishedAt: null,
+      lastFinishedLabel: null,
+      note: "아직 수집 기록 없음",
+    };
   }
 
-  const threshold = EXPECTED_INTERVAL_MS[jobType] * 2;
+  const base = {
+    lastFinishedAt: latest.finishedAt,
+    lastFinishedLabel: formatKst(latest.finishedAt),
+  };
   const age = Date.now() - latest.finishedAt.getTime();
 
   if (latest.status === "failed") {
-    return { state: "failed", lastFinishedAt: latest.finishedAt, note: latest.errorMessage ?? undefined };
+    return { ...base, state: "failed", note: latest.errorMessage ?? undefined };
   }
-  if (age > threshold) {
-    return { state: "stale", lastFinishedAt: latest.finishedAt };
+  if (age > STALE_THRESHOLD_MS[jobType]) {
+    return { ...base, state: "stale" };
   }
   if (latest.status === "partial") {
-    return { state: "ok", lastFinishedAt: latest.finishedAt, note: "일부 표지 누락" };
+    return { ...base, state: "ok", note: "일부 표지 누락" };
   }
-  return { state: "ok", lastFinishedAt: latest.finishedAt };
+  return { ...base, state: "ok" };
 }
 
 /** 홈 화면 섹션 요약용: 벤더 중 가장 나쁜 상태를 대표값으로 반환 */
