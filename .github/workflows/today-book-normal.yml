@@ -1,0 +1,29 @@
+name: today-book-normal
+
+# 매일 08:00 · 20:00 KST에 3사 오늘의 책을 수집한다.
+# GitHub Actions schedule 트리거는 5분이 최소 간격이며 부하 시 지연될 수 있다(design.md §3-4).
+# 화/금 저녁의 1분 간격 재확인은 이 워크플로우가 아니라 today-book-highfreq.yml의
+# 잡 내부 60초 폴링 루프(runTodayBook.ts --poll=highfreq)로 구현되어 있다.
+on:
+  schedule:
+    - cron: "0 23 * * *" # 08:00 KST
+    - cron: "0 11 * * *" # 20:00 KST
+  workflow_dispatch: {}
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx tsx scripts/jobs/runTodayBook.ts
+        env:
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+          CRON_INGEST_SECRET: ${{ secrets.CRON_INGEST_SECRET }}
+          INGEST_BASE_URL: ${{ secrets.INGEST_BASE_URL }}

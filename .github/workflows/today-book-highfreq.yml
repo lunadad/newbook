@@ -1,0 +1,28 @@
+name: today-book-highfreq
+
+# 화·금 18:25 KST에 한 번만 기동되고, 잡 내부에서 19:00 KST 컷오프까지
+# 60초 간격 재확인 루프를 직접 돈다(GitHub Actions schedule의 5분 최소 간격 제약을
+# 우회하기 위한 설계, design.md §3-4). 킥오프 지연에 대비해 실제 목표(18:25)보다
+# 5분 앞당겨 예약한다.
+on:
+  schedule:
+    - cron: "20 9 * * 2,5" # 18:20 KST, 화·금
+  workflow_dispatch: {}
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx tsx scripts/jobs/runTodayBook.ts --poll=highfreq
+        env:
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+          CRON_INGEST_SECRET: ${{ secrets.CRON_INGEST_SECRET }}
+          INGEST_BASE_URL: ${{ secrets.INGEST_BASE_URL }}
