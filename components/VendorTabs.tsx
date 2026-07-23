@@ -2,23 +2,25 @@
 
 import { useState, type ReactNode } from "react";
 import type { Vendor } from "@/db/schema";
-import { VENDOR_LABEL, VENDORS } from "@/lib/vendors";
+import { VENDOR_LABEL } from "@/lib/vendors";
 import { StatusBadge } from "./StatusBadge";
 import type { VendorStatus } from "@/lib/status";
 
 export function VendorTabs({
+  vendors,
   statuses,
   panels,
 }: {
+  vendors: Vendor[];
   statuses: Record<Vendor, VendorStatus>;
   panels: Record<Vendor, ReactNode>;
 }) {
-  const [active, setActive] = useState<Vendor>(VENDORS[0]);
+  const [active, setActive] = useState<Vendor>(vendors[0]);
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
-        {VENDORS.map((vendor) => (
+        {vendors.map((vendor) => (
           <button
             key={vendor}
             onClick={() => setActive(vendor)}

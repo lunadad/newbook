@@ -4,17 +4,17 @@ import { fetchAladinNewReleases } from "@/lib/scraping/aladinApi";
 import { mapRankedItems } from "@/lib/ingest/mapItems";
 import { postIngest } from "@/lib/ingest/client";
 import { politeDelay } from "@/lib/scraping/httpClient";
-import type { Vendor } from "@/db/schema";
+import type { CoreVendor } from "@/lib/vendors";
 import type { NormalizedRankedItem } from "@/lib/scraping/types";
 
-const SCRAPERS: Record<Vendor, () => Promise<NormalizedRankedItem[]>> = {
+const SCRAPERS: Record<CoreVendor, () => Promise<NormalizedRankedItem[]>> = {
   yes24: scrapeYes24NewProduct,
   kyobo: scrapeKyoboNewRelease,
   aladin: () => fetchAladinNewReleases(),
 };
 
 async function main(): Promise<void> {
-  for (const vendor of Object.keys(SCRAPERS) as Vendor[]) {
+  for (const vendor of Object.keys(SCRAPERS) as CoreVendor[]) {
     try {
       const items = (await SCRAPERS[vendor]()).slice(0, 30);
       const ingestItems = await mapRankedItems(items);

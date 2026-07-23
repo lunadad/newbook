@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const vendorSchema = z.enum(["yes24", "kyobo", "aladin"]);
+export const vendorSchema = z.enum(["yes24", "kyobo", "aladin", "amazon"]);
 
 export const ingestItemSchema = z.object({
   isbn13: z.string().optional(),

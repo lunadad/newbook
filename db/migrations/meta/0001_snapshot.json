@@ -1,0 +1,428 @@
+{
+  "id": "6938d93a-3bb0-4dbf-8126-ac70b1217213",
+  "prevId": "7056a792-d68a-4b71-9352-8952f3d47a40",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.books": {
+      "name": "books",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "isbn13": {
+          "name": "isbn13",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "author": {
+          "name": "author",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "publisher": {
+          "name": "publisher",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pub_date": {
+          "name": "pub_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "price": {
+          "name": "price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cover_source_url": {
+          "name": "cover_source_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cover_blob_url": {
+          "name": "cover_blob_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "books_isbn13_unique": {
+          "name": "books_isbn13_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "isbn13"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.scrape_run": {
+      "name": "scrape_run",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "job_type": {
+          "name": "job_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vendor": {
+          "name": "vendor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "item_count": {
+          "name": "item_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "error_message": {
+          "name": "error_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "finished_at": {
+          "name": "finished_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "job_type_check": {
+          "name": "job_type_check",
+          "value": "\"scrape_run\".\"job_type\" IN ('today_book','new_release','bestseller')"
+        },
+        "vendor_check": {
+          "name": "vendor_check",
+          "value": "\"scrape_run\".\"vendor\" IN ('yes24','kyobo','aladin','amazon')"
+        },
+        "status_check": {
+          "name": "status_check",
+          "value": "\"scrape_run\".\"status\" IN ('success','partial','failed')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.vendor_bestseller": {
+      "name": "vendor_bestseller",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "vendor": {
+          "name": "vendor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "book_id": {
+          "name": "book_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rank": {
+          "name": "rank",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "scraped_at": {
+          "name": "scraped_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "vendor_bestseller_book_id_books_id_fk": {
+          "name": "vendor_bestseller_book_id_books_id_fk",
+          "tableFrom": "vendor_bestseller",
+          "tableTo": "books",
+          "columnsFrom": [
+            "book_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "vendor_bestseller_vendor_rank_unique": {
+          "name": "vendor_bestseller_vendor_rank_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "vendor",
+            "rank"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "vendor_check": {
+          "name": "vendor_check",
+          "value": "\"vendor_bestseller\".\"vendor\" IN ('yes24','kyobo','aladin','amazon')"
+        },
+        "rank_check": {
+          "name": "rank_check",
+          "value": "\"vendor_bestseller\".\"rank\" BETWEEN 1 AND 10"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.vendor_new_release": {
+      "name": "vendor_new_release",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "vendor": {
+          "name": "vendor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "book_id": {
+          "name": "book_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rank": {
+          "name": "rank",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category_label": {
+          "name": "category_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scraped_at": {
+          "name": "scraped_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "vendor_new_release_book_id_books_id_fk": {
+          "name": "vendor_new_release_book_id_books_id_fk",
+          "tableFrom": "vendor_new_release",
+          "tableTo": "books",
+          "columnsFrom": [
+            "book_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "vendor_new_release_vendor_rank_unique": {
+          "name": "vendor_new_release_vendor_rank_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "vendor",
+            "rank"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "vendor_check": {
+          "name": "vendor_check",
+          "value": "\"vendor_new_release\".\"vendor\" IN ('yes24','kyobo','aladin')"
+        },
+        "rank_check": {
+          "name": "rank_check",
+          "value": "\"vendor_new_release\".\"rank\" BETWEEN 1 AND 30"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.vendor_today_book": {
+      "name": "vendor_today_book",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "vendor": {
+          "name": "vendor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "book_id": {
+          "name": "book_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slot_no": {
+          "name": "slot_no",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "period_label": {
+          "name": "period_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source_url": {
+          "name": "source_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "scraped_at": {
+          "name": "scraped_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "vendor_today_book_book_id_books_id_fk": {
+          "name": "vendor_today_book_book_id_books_id_fk",
+          "tableFrom": "vendor_today_book",
+          "tableTo": "books",
+          "columnsFrom": [
+            "book_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "vendor_today_book_vendor_slot_no_unique": {
+          "name": "vendor_today_book_vendor_slot_no_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "vendor",
+            "slot_no"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "vendor_check": {
+          "name": "vendor_check",
+          "value": "\"vendor_today_book\".\"vendor\" IN ('yes24','kyobo','aladin')"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

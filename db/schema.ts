@@ -11,7 +11,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
-export const vendorEnum = ["yes24", "kyobo", "aladin"] as const;
+export const vendorEnum = ["yes24", "kyobo", "aladin", "amazon"] as const;
 export type Vendor = (typeof vendorEnum)[number];
 
 export const jobTypeEnum = ["today_book", "new_release", "bestseller"] as const;
@@ -86,7 +86,8 @@ export const vendorBestseller = pgTable(
   },
   (table) => [
     unique().on(table.vendor, table.rank),
-    check("vendor_check", sql`${table.vendor} IN ('yes24','kyobo','aladin')`),
+    // 아마존은 베스트셀러 기능에만 참여한다(오늘의 책/신상품은 미지원, design.md 범위 밖 추가 기능)
+    check("vendor_check", sql`${table.vendor} IN ('yes24','kyobo','aladin','amazon')`),
     check("rank_check", sql`${table.rank} BETWEEN 1 AND 10`),
   ],
 );
@@ -105,7 +106,7 @@ export const scrapeRun = pgTable(
   },
   (table) => [
     check("job_type_check", sql`${table.jobType} IN ('today_book','new_release','bestseller')`),
-    check("vendor_check", sql`${table.vendor} IN ('yes24','kyobo','aladin')`),
+    check("vendor_check", sql`${table.vendor} IN ('yes24','kyobo','aladin','amazon')`),
     check("status_check", sql`${table.status} IN ('success','partial','failed')`),
   ],
 );

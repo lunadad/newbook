@@ -43,11 +43,9 @@ export async function getVendorStatus(jobType: JobType, vendor: Vendor): Promise
   return { state: "ok", lastFinishedAt: latest.finishedAt };
 }
 
-const VENDORS: Vendor[] = ["yes24", "kyobo", "aladin"];
-
 /** 홈 화면 섹션 요약용: 벤더 중 가장 나쁜 상태를 대표값으로 반환 */
-export async function getJobTypeStatus(jobType: JobType): Promise<VendorStatus> {
-  const statuses = await Promise.all(VENDORS.map((v) => getVendorStatus(jobType, v)));
+export async function getJobTypeStatus(jobType: JobType, vendors: Vendor[]): Promise<VendorStatus> {
+  const statuses = await Promise.all(vendors.map((v) => getVendorStatus(jobType, v)));
   const priority: Record<StatusState, number> = { failed: 2, stale: 1, ok: 0 };
   return statuses.reduce((worst, cur) =>
     priority[cur.state] > priority[worst.state] ? cur : worst,

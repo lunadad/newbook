@@ -26,7 +26,7 @@ export default async function NewReleasesPage() {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-xl font-bold">문학 신상품</h1>
-      <VendorTabs statuses={statuses} panels={panels} />
+      <VendorTabs vendors={VENDORS} statuses={statuses} panels={panels} />
     </div>
   );
 }

@@ -16,6 +16,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - run: npx playwright install --with-deps chromium
       - run: npx tsx scripts/jobs/runBestsellers.ts
         env:
           BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}

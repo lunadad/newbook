@@ -2,6 +2,7 @@ import Link from "next/link";
 import { VendorCard } from "@/components/VendorCard";
 import { StatusBadge } from "@/components/StatusBadge";
 import { getTodayBooksByVendor, VENDORS } from "@/lib/queries";
+import { BESTSELLER_VENDORS } from "@/lib/vendors";
 import { getVendorStatus, getJobTypeStatus } from "@/lib/status";
 
 export const dynamic = "force-dynamic";
@@ -20,8 +21,8 @@ export default async function HomePage() {
         status: await getVendorStatus("today_book", vendor),
       })),
     ),
-    getJobTypeStatus("new_release"),
-    getJobTypeStatus("bestseller"),
+    getJobTypeStatus("new_release", VENDORS),
+    getJobTypeStatus("bestseller", BESTSELLER_VENDORS),
   ]);
 
   return (

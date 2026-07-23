@@ -1,6 +1,7 @@
 import { scrapeYes24Bestseller } from "@/lib/scraping/yes24ProductList";
 import { scrapeKyoboBestseller } from "@/lib/scraping/kyoboBestseller";
 import { fetchAladinBestsellers } from "@/lib/scraping/aladinApi";
+import { scrapeAmazonBestseller } from "@/lib/scraping/amazonBestseller";
 import { mapRankedItems } from "@/lib/ingest/mapItems";
 import { postIngest } from "@/lib/ingest/client";
 import { politeDelay } from "@/lib/scraping/httpClient";
@@ -11,6 +12,7 @@ const SCRAPERS: Record<Vendor, () => Promise<NormalizedRankedItem[]>> = {
   yes24: scrapeYes24Bestseller,
   kyobo: scrapeKyoboBestseller,
   aladin: () => fetchAladinBestsellers(),
+  amazon: scrapeAmazonBestseller,
 };
 
 async function main(): Promise<void> {

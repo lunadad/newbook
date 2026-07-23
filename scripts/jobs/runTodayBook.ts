@@ -4,7 +4,7 @@ import { scrapeKyoboTodayBook } from "@/lib/scraping/kyoboTodayBook.playwright";
 import { mapTodayBookItems } from "@/lib/ingest/mapItems";
 import { postIngest } from "@/lib/ingest/client";
 import { politeDelay } from "@/lib/scraping/httpClient";
-import type { Vendor } from "@/db/schema";
+import type { CoreVendor } from "@/lib/vendors";
 import type { NormalizedTodayBookItem } from "@/lib/scraping/types";
 
 const POLL_INTERVAL_MS = 60_000;
@@ -17,7 +17,7 @@ function highfreqCutoff(): Date {
   );
 }
 
-const SCRAPERS: Record<Vendor, () => Promise<NormalizedTodayBookItem[]>> = {
+const SCRAPERS: Record<CoreVendor, () => Promise<NormalizedTodayBookItem[]>> = {
   yes24: scrapeYes24TodayBook,
   aladin: scrapeAladinWeekly,
   kyobo: scrapeKyoboTodayBook,
@@ -31,14 +31,14 @@ function setsEqual(a: Set<string>, b: Set<string>): boolean {
   return a.size === b.size && [...a].every((t) => b.has(t));
 }
 
-async function ingestVendor(vendor: Vendor, items: NormalizedTodayBookItem[]): Promise<void> {
+async function ingestVendor(vendor: CoreVendor, items: NormalizedTodayBookItem[]): Promise<void> {
   const ingestItems = await mapTodayBookItems(items);
   await postIngest("today-book", vendor, ingestItems);
   console.log(`[today-book] ${vendor}: ${items.length}건 반영`);
 }
 
 async function runOnce(): Promise<void> {
-  for (const vendor of Object.keys(SCRAPERS) as Vendor[]) {
+  for (const vendor of Object.keys(SCRAPERS) as CoreVendor[]) {
     try {
       const items = await SCRAPERS[vendor]();
       await ingestVendor(vendor, items);
@@ -56,8 +56,8 @@ async function runOnce(): Promise<void> {
  */
 async function runHighfreq(): Promise<void> {
   const cutoff = highfreqCutoff();
-  const pending = new Set<Vendor>(["kyobo", "aladin"]);
-  const lastSeen = new Map<Vendor, Set<string>>();
+  const pending = new Set<CoreVendor>(["kyobo", "aladin"]);
+  const lastSeen = new Map<CoreVendor, Set<string>>();
 
   while (pending.size > 0 && new Date() < cutoff) {
     for (const vendor of [...pending]) {

@@ -9,7 +9,20 @@ interface RankRow {
   coverBlobUrl: string | null;
 }
 
-export function RankTable({ rows }: { rows: RankRow[] }) {
+function formatPrice(price: number | null, currency: "KRW" | "USD"): string {
+  if (price == null) return "-";
+  if (currency === "USD") return `$${(price / 100).toFixed(2)}`;
+  return `${price.toLocaleString()}원`;
+}
+
+export function RankTable({
+  rows,
+  currency = "KRW",
+}: {
+  rows: RankRow[];
+  /** 아마존만 센트 단위 USD 정수로 저장되어 표시 포맷이 다르다(lib/vendors.ts VENDOR_CURRENCY 참고) */
+  currency?: "KRW" | "USD";
+}) {
   if (rows.length === 0) {
     return <p className="text-sm text-foreground-subtle py-10 text-center">아직 수집된 데이터가 없습니다</p>;
   }
@@ -37,9 +50,7 @@ export function RankTable({ rows }: { rows: RankRow[] }) {
                 </p>
               </div>
             </div>
-            <span className="text-sm text-foreground text-right">
-              {row.price != null ? `${row.price.toLocaleString()}원` : "-"}
-            </span>
+            <span className="text-sm text-foreground text-right">{formatPrice(row.price, currency)}</span>
           </div>
         ))}
       </div>
