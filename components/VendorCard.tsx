@@ -54,14 +54,21 @@ export function VendorCard({
                 ) : null}
               </a>
               <div className="min-w-0 flex-1">
-                <a
-                  href={item.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium text-foreground hover:text-accent line-clamp-2"
-                >
-                  {item.title}
-                </a>
+                <div className="flex items-start justify-between gap-2">
+                  <a
+                    href={item.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-foreground hover:text-accent line-clamp-2"
+                  >
+                    {item.title}
+                  </a>
+                  {item.periodLabel ? (
+                    <span className="shrink-0 text-[11px] text-foreground-subtle whitespace-nowrap mt-0.5">
+                      {item.periodLabel}
+                    </span>
+                  ) : null}
+                </div>
                 <p className="text-xs text-foreground-muted mt-0.5 line-clamp-1">
                   {[item.author, item.publisher].filter(Boolean).join(" · ")}
                 </p>
