@@ -66,11 +66,14 @@ async function runHighfreq(): Promise<void> {
         const current = titleSetOf(items);
         const previous = lastSeen.get(vendor);
 
-        if (!previous || !setsEqual(previous, current)) {
+        if (!previous) {
+          // 최초 관측치는 비교 기준선으로만 기록한다. 이를 "변경"으로 취급해 즉시
+          // ingest하면 매번 첫 시도에서 폴링이 끝나버려 60초 재확인 루프가 무의미해진다.
+          lastSeen.set(vendor, current);
+        } else if (!setsEqual(previous, current)) {
           await ingestVendor(vendor, items);
           pending.delete(vendor);
         }
-        lastSeen.set(vendor, current);
       } catch (err) {
         console.error(`[today-book:highfreq] ${vendor} 실패:`, err);
       }
