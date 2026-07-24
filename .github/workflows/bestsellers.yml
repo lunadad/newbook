@@ -1,8 +1,12 @@
 name: bestsellers
 
+# 정기 갱신은 로컬 헤르메스 cron(newbook_bestsellers.sh)이 정시로 담당한다
+# (GitHub Actions schedule은 상시 지연되어 실측 ~2시간 간격이었음). 여기서는
+# 수동 트리거(workflow_dispatch)만 남겨 백업/디버깅용으로 유지한다. schedule을
+# 다시 켜려면 아래 블록의 주석을 해제한다.
 on:
-  schedule:
-    - cron: "0 * * * *"
+  # schedule:
+  #   - cron: "0 * * * *"
   workflow_dispatch: {}
 
 jobs:
