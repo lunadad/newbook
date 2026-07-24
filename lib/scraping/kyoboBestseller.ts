@@ -17,6 +17,13 @@ function parsePrice(text: string): number | undefined {
  * 위젯 포함)를 스캔하면 무관한 상품이 섞여 순위가 어긋난다(실측으로 확인한 버그).
  * 순위 배지는 1위만 SVG(`<desc>교보문고 Best N</desc>`), 2위 이하는 일반 텍스트 span이라
  * 두 경우를 모두 읽어 실제 순위를 사용한다(DOM 등장 순서에 의존하지 않음).
+ *
+ * 교보문고 실시간 베스트는 카테고리 필터가 없는 **종합** 순위라 음반·굿즈가 섞인다.
+ * 그런 항목은 도서 상세(product.kyobobook.co.kr/detail/)가 아니라 hottracks 링크라
+ * 여기서 걸러지는데, 그러면 순위에 구멍이 생긴다(예: 4위가 LP면 1,2,3,5,...).
+ * 이때 상위 N개를 "앞에서 N개 자르기"로 뽑으면 11위가 딸려 들어와
+ * `rank BETWEEN 1 AND 10` 제약을 위반하므로, 반드시 **실제 순위값으로 필터**해야 한다.
+ * 도서가 아닌 순위는 비워 두는 편이 순위를 임의로 당겨 매기는 것보다 정확하다.
  */
 export function parseKyoboBestsellerHtml(html: string): NormalizedRankedItem[] {
   const $ = cheerio.load(html);
@@ -24,7 +31,7 @@ export function parseKyoboBestsellerHtml(html: string): NormalizedRankedItem[] {
   const seen = new Set<string>();
   const items: NormalizedRankedItem[] = [];
 
-  $("ol.grid > li").each((_, el) => {
+  $("ol.grid > li").each((domIndex, el) => {
     const node = $(el);
     const link = node.find('a.prod_link[href*="/detail/"]').first().attr("href");
     if (!link || seen.has(link)) return;
@@ -54,7 +61,9 @@ export function parseKyoboBestsellerHtml(html: string): NormalizedRankedItem[] {
       .first()
       .text()
       .trim();
-    const rank = bestMatch ? Number(bestMatch[1]) : Number(rankSpanText) || items.length + 1;
+    // 배지를 못 읽으면 DOM 위치(1-based)를 쓴다 — items.length는 걸러진 항목을 빼고 세므로
+    // 실제 순위와 어긋난다(음반 등이 걸러졌을 때 순위가 당겨짐).
+    const rank = bestMatch ? Number(bestMatch[1]) : Number(rankSpanText) || domIndex + 1;
 
     const meta = node.find("div.line-clamp-2.flex.overflow-hidden").first();
     const metaClone = meta.clone();
@@ -88,8 +97,8 @@ export function parseKyoboBestsellerHtml(html: string): NormalizedRankedItem[] {
     });
   });
 
-  items.sort((a, b) => a.rank - b.rank);
-  const top = items.slice(0, MAX_ITEMS);
+  // 앞에서 N개 자르기(slice)가 아니라 실제 순위값으로 거른다 — 위 주석 참고.
+  const top = items.filter((i) => i.rank >= 1 && i.rank <= MAX_ITEMS).sort((a, b) => a.rank - b.rank);
 
   if (top.length === 0) {
     throw new Error("교보문고 실시간 베스트셀러 파싱 결과 0건 — 선택자 확인 필요");

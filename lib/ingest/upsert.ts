@@ -102,6 +102,18 @@ export async function upsertIngestBatch(
   const startedAt = new Date();
   const status = computeStatus(items);
 
+  // DB CHECK 제약(rank BETWEEN 1 AND N)에 걸리면 원인을 알기 어려운 SQL 에러로 배치 전체가
+  // 실패한다. 스크래퍼가 범위 밖 순위를 넘기는 실수를 바로 알아볼 수 있도록 미리 검증한다.
+  const maxRank = jobType === "new_release" ? 30 : jobType === "bestseller" ? 10 : null;
+  if (maxRank !== null) {
+    const bad = items.find((i) => i.rank != null && (i.rank < 1 || i.rank > maxRank));
+    if (bad) {
+      throw new Error(
+        `${jobType} 순위가 허용 범위(1~${maxRank})를 벗어남: rank=${bad.rank} "${bad.title}" — 스크래퍼 순위 산출 확인 필요`,
+      );
+    }
+  }
+
   try {
     await db.transaction(async (tx) => {
       if (jobType === "today_book") {

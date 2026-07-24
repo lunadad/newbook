@@ -61,8 +61,9 @@ export function parseAmazonBestsellerHtml(html: string): NormalizedRankedItem[] 
     });
   });
 
-  items.sort((a, b) => a.rank - b.rank);
-  const top = items.slice(0, MAX_ITEMS);
+  // 항목이 걸러져 순위에 구멍이 생겨도 MAX_ITEMS 초과 순위가 섞이지 않도록 순위값으로 거른다
+  // (rank BETWEEN 1 AND 10 제약 위반 방지 — 교보문고에서 실제로 발생했던 버그)
+  const top = items.filter((i) => i.rank >= 1 && i.rank <= MAX_ITEMS).sort((a, b) => a.rank - b.rank);
 
   if (top.length === 0) {
     throw new Error("아마존 베스트셀러 파싱 결과 0건 — 선택자 확인 필요");
