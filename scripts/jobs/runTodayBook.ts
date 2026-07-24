@@ -37,8 +37,25 @@ async function ingestVendor(vendor: CoreVendor, items: NormalizedTodayBookItem[]
   console.log(`[today-book] ${vendor}: ${items.length}건 반영`);
 }
 
-async function runOnce(): Promise<void> {
-  for (const vendor of Object.keys(SCRAPERS) as CoreVendor[]) {
+/**
+ * `--vendors=yes24,aladin` 형태로 수집 대상을 제한한다(미지정 시 전체).
+ * 벤더마다 갱신 시각이 달라(예스24 16:30 전후, 교보문고·알라딘 18:00 전후) 크론에서
+ * 해당 시간대에 필요한 벤더만 돌리기 위한 옵션이다 — 불필요한 스크래핑을 줄인다.
+ */
+function parseVendorsArg(argv: string[]): CoreVendor[] {
+  const all = Object.keys(SCRAPERS) as CoreVendor[];
+  const arg = argv.find((a) => a.startsWith("--vendors="));
+  if (!arg) return all;
+  const requested = arg.slice("--vendors=".length).split(",").map((s) => s.trim());
+  const selected = all.filter((v) => requested.includes(v));
+  if (selected.length === 0) {
+    throw new Error(`--vendors 값이 올바르지 않습니다: ${arg} (사용 가능: ${all.join(",")})`);
+  }
+  return selected;
+}
+
+async function runOnce(vendors: CoreVendor[]): Promise<void> {
+  for (const vendor of vendors) {
     try {
       const items = await SCRAPERS[vendor]();
       await ingestVendor(vendor, items);
@@ -85,7 +102,7 @@ async function runHighfreq(): Promise<void> {
 
 async function main(): Promise<void> {
   const isHighfreq = process.argv.includes("--poll=highfreq");
-  await (isHighfreq ? runHighfreq() : runOnce());
+  await (isHighfreq ? runHighfreq() : runOnce(parseVendorsArg(process.argv)));
 }
 
 main().catch((err) => {

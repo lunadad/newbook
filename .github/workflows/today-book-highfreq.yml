@@ -1,15 +1,10 @@
 name: today-book-highfreq
 
-# 화·금 저녁에 한 번만 기동되고, 잡 내부에서 60초 간격 재확인 루프를 직접 돈다
-# (GitHub Actions schedule의 5분 최소 간격 제약을 우회하기 위한 설계, design.md §3-4).
-#
-# 폴링 종료 시점은 절대 시각이 아니라 **기동 시점 기준 90분**이다(runTodayBook.ts
-# HIGHFREQ_WINDOW_MS). GitHub이 스케줄 워크플로우를 상시 지연시키기 때문에(실측 86~109분)
-# 절대 컷오프를 쓰면 지연 기동 시 폴링을 한 번도 못 돌고 끝난다.
-# timeout-minutes는 폴링 창(90분) + 설치 단계 여유를 더해 잡는다.
+# 정기 갱신은 로컬 헤르메스 cron이 담당한다. 헤르메스는 분 단위 스케줄이 가능해
+# 인프로세스 90분 폴링 루프 없이도 갱신 시각 창을 매분 확인할 수 있다.
 on:
-  schedule:
-    - cron: "20 9 * * 2,5" # 18:20 KST, 화·금
+  # schedule:
+  #   - cron: "20 9 * * 2,5" # 18:20 KST, 화·금
   workflow_dispatch: {}
 
 jobs:

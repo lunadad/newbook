@@ -1,13 +1,11 @@
 name: today-book-normal
 
-# 매일 08:00 · 20:00 KST에 3사 오늘의 책을 수집한다.
-# GitHub Actions schedule 트리거는 5분이 최소 간격이며 부하 시 지연될 수 있다(design.md §3-4).
-# 화/금 저녁의 1분 간격 재확인은 이 워크플로우가 아니라 today-book-highfreq.yml의
-# 잡 내부 60초 폴링 루프(runTodayBook.ts --poll=highfreq)로 구현되어 있다.
+# 정기 갱신은 로컬 헤르메스 cron이 담당한다(벤더별 실제 갱신 시각에 맞춘 창 + 4시간 안전망).
+# GitHub Actions schedule은 상시 지연되어 갱신을 놓치므로 수동 트리거만 남긴다.
 on:
-  schedule:
-    - cron: "0 23 * * *" # 08:00 KST
-    - cron: "0 11 * * *" # 20:00 KST
+  # schedule:
+  #   - cron: "0 23 * * *" # 08:00 KST
+  #   - cron: "0 11 * * *" # 20:00 KST
   workflow_dispatch: {}
 
 jobs:
