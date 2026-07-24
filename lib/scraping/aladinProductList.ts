@@ -72,14 +72,17 @@ export async function scrapeAladinProductListPage(
 
 export const scrapeAladinNewFallback = () =>
   scrapeAladinProductListPage(
-    // SortOrder=5: 출간일순(최신순). 실측 결과 기본값(SortOrder=2)은 출간일 기준으로
-    // 정렬되어 있지 않아(월 순서가 뒤섞임) 최신순을 보장하려면 명시가 필요하다.
-    `https://www.aladin.co.kr/shop/common/wnew.aspx?BranchType=7&CID=${ALADIN_LITERATURE_CID}&SortOrder=5`,
+    // "주목할만한 새 책"(NewType=SpecialNew) — 알라딘 사이트에서 "새로나온책 > 소설/시/희곡"을
+    // 눌렀을 때 나오는 정규 화면. 기본 정렬이 등록일순(최신 등록 우선, 출간일 12주 이내)이라
+    // yes24의 등록일순과 일관된다. (이전 BranchType=7 URL은 사이트 화면과 다른 목록을 반환했음)
+    `https://www.aladin.co.kr/shop/common/wnew.aspx?NewType=SpecialNew&BranchType=1&CID=${ALADIN_LITERATURE_CID}`,
     30,
   );
 
 export const scrapeAladinBestsellerFallback = () =>
   scrapeAladinProductListPage(
-    `https://www.aladin.co.kr/shop/common/wbest.aspx?CID=${ALADIN_LITERATURE_CID}`,
+    // BestType=NowBest — "지금 베스트"(실시간). 기본값(주간 베스트)은 실시간이 아니므로 반드시 명시.
+    // yes24/교보문고 "실시간 베스트셀러"와 성격이 일치한다.
+    `https://www.aladin.co.kr/shop/common/wbest.aspx?BestType=NowBest&BranchType=1&CID=${ALADIN_LITERATURE_CID}`,
     10,
   );

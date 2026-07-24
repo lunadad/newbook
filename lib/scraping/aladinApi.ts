@@ -3,7 +3,10 @@ import { ALADIN_LITERATURE_CID, scrapeAladinNewFallback, scrapeAladinBestsellerF
 
 const API_BASE = "https://www.aladin.co.kr/ttb/api/ItemList.aspx";
 
-type AladinQueryType = "ItemNewAll" | "Bestseller";
+// ItemNewSpecial = "주목할만한 새 책"(사이트의 새로나온책 화면과 동일). ItemNewAll(전체 신간)은
+// 화면과 목록이 달라 부정확했음. 알라딘 OpenAPI에는 "실시간 베스트셀러"가 없어(주간만 제공)
+// Bestseller QueryType은 신상품 폴백 확인용으로만 남기지 않고 아예 쓰지 않는다(아래 참조).
+type AladinQueryType = "ItemNewSpecial";
 
 interface AladinApiItem {
   title: string;
@@ -75,7 +78,7 @@ export async function fetchAladinNewReleases(
   const { preferApi = true } = options;
   if (preferApi) {
     try {
-      return await callAladinApi("ItemNewAll", 30);
+      return await callAladinApi("ItemNewSpecial", 30);
     } catch (err) {
       console.error("알라딘 OpenAPI(신상품) 실패, 스크래핑 폴백 사용:", err);
     }
@@ -83,16 +86,8 @@ export async function fetchAladinNewReleases(
   return scrapeAladinNewFallback();
 }
 
-export async function fetchAladinBestsellers(
-  options: AladinFetchOptions = {},
-): Promise<NormalizedRankedItem[]> {
-  const { preferApi = true } = options;
-  if (preferApi) {
-    try {
-      return await callAladinApi("Bestseller", 10);
-    } catch (err) {
-      console.error("알라딘 OpenAPI(베스트셀러) 실패, 스크래핑 폴백 사용:", err);
-    }
-  }
+export async function fetchAladinBestsellers(): Promise<NormalizedRankedItem[]> {
+  // 알라딘 OpenAPI는 주간 베스트만 제공하고 "실시간(지금) 베스트"가 없다.
+  // 실시간 순위를 얻으려면 NowBest 화면 스크래핑이 유일한 방법이므로 항상 폴백을 사용한다.
   return scrapeAladinBestsellerFallback();
 }
