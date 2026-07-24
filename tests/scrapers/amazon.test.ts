@@ -17,5 +17,7 @@ describe("parseAmazonBestsellerHtml", () => {
     expect(items[0].isbn13).toMatch(/^\d{13}$/);
     // 가격은 센트 단위로 저장된다 (예: $14.98 -> 1498)
     expect(items[0].price).toBe(1498);
+    // 상품 URL은 ASIN 기준 정규 형태
+    expect(items[0].productUrl).toMatch(/^https:\/\/www\.amazon\.com\/dp\/\w{10}$/);
   });
 });

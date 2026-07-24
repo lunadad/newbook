@@ -27,6 +27,7 @@ export async function getNewReleasesByVendor(vendor: Vendor) {
     .select({
       rank: vendorNewRelease.rank,
       categoryLabel: vendorNewRelease.categoryLabel,
+      sourceUrl: vendorNewRelease.sourceUrl,
       title: books.title,
       author: books.author,
       publisher: books.publisher,
@@ -43,6 +44,7 @@ export async function getBestsellersByVendor(vendor: Vendor) {
   return db
     .select({
       rank: vendorBestseller.rank,
+      sourceUrl: vendorBestseller.sourceUrl,
       title: books.title,
       author: books.author,
       publisher: books.publisher,

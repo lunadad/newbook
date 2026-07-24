@@ -33,6 +33,7 @@ export async function mapRankedItems(items: NormalizedRankedItem[]): Promise<Ing
       coverBlobUrl: (await ensureCoverUploaded(item.isbn13, item.coverSourceUrl)) ?? undefined,
       rank: item.rank,
       categoryLabel: item.categoryLabel,
+      sourceUrl: item.productUrl,
     })),
   );
 }

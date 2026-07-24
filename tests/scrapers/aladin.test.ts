@@ -26,6 +26,7 @@ describe("parseAladinProductListHtml (신상품 폴백)", () => {
     items.forEach((item, i) => {
       expect(item.rank).toBe(i + 1);
       expect(item.title.length).toBeGreaterThan(0);
+      expect(item.productUrl).toContain("wproduct.aspx");
     });
   });
 });
@@ -34,5 +35,6 @@ describe("parseAladinProductListHtml (베스트셀러 폴백)", () => {
   it("상위 10개로 절단", () => {
     const items = parseAladinProductListHtml(fixture("aladin_bestseller_fallback.html"), 10);
     expect(items).toHaveLength(10);
+    expect(items[0].productUrl).toContain("wproduct.aspx");
   });
 });

@@ -45,6 +45,13 @@ export function parseAladinProductListHtml(
 
     const coverSourceUrl = node.find(".cover_area_other img").first().attr("src") || undefined;
 
+    const href = node.find("a.bo3").first().attr("href");
+    const productUrl = href
+      ? href.startsWith("http")
+        ? href
+        : `https://www.aladin.co.kr${href}`
+      : undefined;
+
     items.push({
       rank: items.length + 1,
       title,
@@ -52,6 +59,7 @@ export function parseAladinProductListHtml(
       publisher,
       price,
       coverSourceUrl,
+      productUrl,
     });
   });
 

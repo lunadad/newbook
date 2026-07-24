@@ -47,6 +47,8 @@ export function parseAmazonBestsellerHtml(html: string): NormalizedRankedItem[] 
 
     const asin = node.find("[data-asin]").first().attr("data-asin");
     const isbn13 = asin ? isbn10to13(asin) : undefined;
+    // 상세 링크에는 추적용 ref 파라미터가 붙어 있어 ASIN 기준 정규 URL로 정리
+    const productUrl = asin ? `https://www.amazon.com/dp/${asin}` : undefined;
 
     items.push({
       rank,
@@ -55,6 +57,7 @@ export function parseAmazonBestsellerHtml(html: string): NormalizedRankedItem[] 
       price,
       isbn13,
       coverSourceUrl,
+      productUrl,
     });
   });
 

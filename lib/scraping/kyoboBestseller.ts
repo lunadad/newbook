@@ -84,6 +84,7 @@ export function parseKyoboBestsellerHtml(html: string): NormalizedRankedItem[] {
       price,
       isbn13: isbnMatch ? isbnMatch[1] : undefined,
       coverSourceUrl,
+      productUrl: link,
     });
   });
 

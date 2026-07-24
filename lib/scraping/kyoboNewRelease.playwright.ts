@@ -42,6 +42,7 @@ export function parseKyoboNewReleaseHtml(html: string): NormalizedRankedItem[] {
       price: parsePrice(priceText),
       isbn13,
       coverSourceUrl,
+      productUrl: link,
     });
   });
 

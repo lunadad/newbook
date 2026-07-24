@@ -21,4 +21,6 @@ export interface NormalizedRankedItem {
   price?: number;
   coverSourceUrl?: string;
   categoryLabel?: string;
+  /** 해당 벤더의 상품 상세 페이지 URL(클릭 시 이동) */
+  productUrl?: string;
 }

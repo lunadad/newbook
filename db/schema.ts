@@ -64,6 +64,7 @@ export const vendorNewRelease = pgTable(
       .references(() => books.id),
     rank: integer("rank").notNull(),
     categoryLabel: text("category_label"),
+    sourceUrl: text("source_url"),
     scrapedAt: timestamp("scraped_at", { withTimezone: true }).notNull(),
   },
   (table) => [
@@ -82,6 +83,7 @@ export const vendorBestseller = pgTable(
       .notNull()
       .references(() => books.id),
     rank: integer("rank").notNull(),
+    sourceUrl: text("source_url"),
     scrapedAt: timestamp("scraped_at", { withTimezone: true }).notNull(),
   },
   (table) => [

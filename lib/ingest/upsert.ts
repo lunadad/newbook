@@ -154,11 +154,17 @@ export async function upsertIngestBatch(
               bookId,
               rank: item.rank,
               categoryLabel: item.categoryLabel,
+              sourceUrl: item.sourceUrl,
               scrapedAt,
             })
             .onConflictDoUpdate({
               target: [vendorNewRelease.vendor, vendorNewRelease.rank],
-              set: { bookId, categoryLabel: item.categoryLabel, scrapedAt },
+              set: {
+                bookId,
+                categoryLabel: item.categoryLabel,
+                sourceUrl: item.sourceUrl,
+                scrapedAt,
+              },
             });
         }
         await tx
@@ -177,10 +183,10 @@ export async function upsertIngestBatch(
           ranks.push(item.rank);
           await tx
             .insert(vendorBestseller)
-            .values({ vendor, bookId, rank: item.rank, scrapedAt })
+            .values({ vendor, bookId, rank: item.rank, sourceUrl: item.sourceUrl, scrapedAt })
             .onConflictDoUpdate({
               target: [vendorBestseller.vendor, vendorBestseller.rank],
-              set: { bookId, scrapedAt },
+              set: { bookId, sourceUrl: item.sourceUrl, scrapedAt },
             });
         }
         await tx

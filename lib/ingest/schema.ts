@@ -11,7 +11,8 @@ export const ingestItemSchema = z.object({
   price: z.number().int().nonnegative().optional(),
   coverBlobUrl: z.string().url().optional(),
   coverSourceUrl: z.string().url().optional(),
-  /** 오늘의 책(today_book) 전용: 도서 원문(상세 페이지) 링크. vendor_today_book.source_url이 NOT NULL이라 필수. */
+  /** 상품 상세 페이지 링크. today_book은 필수(vendor_today_book.source_url NOT NULL),
+   * new_release/bestseller는 선택(클릭 시 이동용). */
   sourceUrl: z.string().url().optional(),
   rank: z.number().int().positive().optional(),
   slotNo: z.number().int().positive().optional(),

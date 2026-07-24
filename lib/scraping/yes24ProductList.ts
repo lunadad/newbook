@@ -34,6 +34,13 @@ export function parseYes24ProductListHtml(
     const price = parsePrice(priceText);
     const coverSourceUrl = node.find("img").first().attr("data-original") || undefined;
 
+    const href = node.find(".gd_name").first().attr("href");
+    const productUrl = href
+      ? href.startsWith("http")
+        ? href
+        : `https://www.yes24.com${href}`
+      : undefined;
+
     items.push({
       rank,
       title,
@@ -41,6 +48,7 @@ export function parseYes24ProductListHtml(
       publisher,
       price,
       coverSourceUrl,
+      productUrl,
     });
   });
 

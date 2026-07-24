@@ -7,6 +7,7 @@ interface RankRow {
   publisher: string | null;
   price: number | null;
   coverBlobUrl: string | null;
+  sourceUrl: string | null;
 }
 
 function formatPrice(price: number | null, currency: "KRW" | "USD"): string {
@@ -30,29 +31,55 @@ export function RankTable({
   return (
     <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
       <div className="min-w-[480px]">
-        {rows.map((row) => (
-          <div
-            key={row.rank}
-            className="grid items-center gap-3 px-4 py-3 border-b border-border last:border-b-0"
-            style={{ gridTemplateColumns: "36px minmax(0,1fr) 88px" }}
-          >
-            <span className="text-sm font-bold text-foreground-subtle text-center">{row.rank}</span>
-            <div className="flex items-center gap-3 min-w-0">
-              <span className="shrink-0 rounded bg-surface-muted overflow-hidden relative" style={{ width: "36px", height: "52px" }}>
-                {row.coverBlobUrl ? (
-                  <Image src={row.coverBlobUrl} alt={row.title} fill sizes="36px" className="object-cover" />
-                ) : null}
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-foreground line-clamp-1">{row.title}</p>
-                <p className="text-xs text-foreground-muted line-clamp-1">
-                  {[row.author, row.publisher].filter(Boolean).join(" · ")}
-                </p>
-              </div>
+        {rows.map((row) => {
+          const cover = (
+            <span
+              className="shrink-0 rounded bg-surface-muted overflow-hidden relative block"
+              style={{ width: "36px", height: "52px" }}
+            >
+              {row.coverBlobUrl ? (
+                <Image src={row.coverBlobUrl} alt={row.title} fill sizes="36px" className="object-cover" />
+              ) : null}
+            </span>
+          );
+          const meta = (
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-foreground line-clamp-1 group-hover:text-accent transition-colors">
+                {row.title}
+              </p>
+              <p className="text-xs text-foreground-muted line-clamp-1">
+                {[row.author, row.publisher].filter(Boolean).join(" · ")}
+              </p>
             </div>
-            <span className="text-sm text-foreground text-right">{formatPrice(row.price, currency)}</span>
-          </div>
-        ))}
+          );
+
+          return (
+            <div
+              key={row.rank}
+              className="grid items-center gap-3 px-4 py-3 border-b border-border last:border-b-0"
+              style={{ gridTemplateColumns: "36px minmax(0,1fr) 88px" }}
+            >
+              <span className="text-sm font-bold text-foreground-subtle text-center">{row.rank}</span>
+              {row.sourceUrl ? (
+                <a
+                  href={row.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group flex items-center gap-3 min-w-0"
+                >
+                  {cover}
+                  {meta}
+                </a>
+              ) : (
+                <div className="flex items-center gap-3 min-w-0">
+                  {cover}
+                  {meta}
+                </div>
+              )}
+              <span className="text-sm text-foreground text-right">{formatPrice(row.price, currency)}</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
