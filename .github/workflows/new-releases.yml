@@ -23,7 +23,6 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npx tsx scripts/jobs/runNewReleases.ts
         env:
-          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
           CRON_INGEST_SECRET: ${{ secrets.CRON_INGEST_SECRET }}
           INGEST_BASE_URL: ${{ secrets.INGEST_BASE_URL }}
           ALADIN_TTB_KEY: ${{ secrets.ALADIN_TTB_KEY }}

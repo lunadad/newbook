@@ -12,7 +12,7 @@ interface TodayBookItem {
   title: string;
   author: string | null;
   publisher: string | null;
-  coverBlobUrl: string | null;
+  coverImageUrl: string | null;
 }
 
 export function VendorCard({
@@ -43,9 +43,9 @@ export function VendorCard({
                 rel="noreferrer"
                 className="shrink-0 w-16 h-24 rounded-lg overflow-hidden bg-surface-muted relative"
               >
-                {item.coverBlobUrl ? (
+                {item.coverImageUrl ? (
                   <Image
-                    src={item.coverBlobUrl}
+                    src={item.coverImageUrl}
                     alt={item.title}
                     fill
                     sizes="64px"

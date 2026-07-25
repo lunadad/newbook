@@ -6,7 +6,7 @@ interface RankRow {
   author: string | null;
   publisher: string | null;
   price: number | null;
-  coverBlobUrl: string | null;
+  coverImageUrl: string | null;
   sourceUrl: string | null;
 }
 
@@ -37,8 +37,8 @@ export function RankTable({
               className="shrink-0 rounded bg-surface-muted overflow-hidden relative block"
               style={{ width: "36px", height: "52px" }}
             >
-              {row.coverBlobUrl ? (
-                <Image src={row.coverBlobUrl} alt={row.title} fill sizes="36px" className="object-cover" />
+              {row.coverImageUrl ? (
+                <Image src={row.coverImageUrl} alt={row.title} fill sizes="36px" className="object-cover" />
               ) : null}
             </span>
           );

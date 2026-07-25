@@ -14,7 +14,7 @@ export async function getTodayBooksByVendor(vendor: Vendor) {
       title: books.title,
       author: books.author,
       publisher: books.publisher,
-      coverBlobUrl: books.coverBlobUrl,
+      coverImageUrl: books.coverSourceUrl,
     })
     .from(vendorTodayBook)
     .innerJoin(books, eq(vendorTodayBook.bookId, books.id))
@@ -32,7 +32,7 @@ export async function getNewReleasesByVendor(vendor: Vendor) {
       author: books.author,
       publisher: books.publisher,
       price: books.price,
-      coverBlobUrl: books.coverBlobUrl,
+      coverImageUrl: books.coverSourceUrl,
     })
     .from(vendorNewRelease)
     .innerJoin(books, eq(vendorNewRelease.bookId, books.id))
@@ -49,7 +49,7 @@ export async function getBestsellersByVendor(vendor: Vendor) {
       author: books.author,
       publisher: books.publisher,
       price: books.price,
-      coverBlobUrl: books.coverBlobUrl,
+      coverImageUrl: books.coverSourceUrl,
     })
     .from(vendorBestseller)
     .innerJoin(books, eq(vendorBestseller.bookId, books.id))

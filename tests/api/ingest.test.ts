@@ -51,11 +51,11 @@ function registerIngestTests() {
       expect(rows[0].rank).toBe(1);
     });
 
-    it("표지 URL이 일부 누락되면 status=partial로 기록된다", async () => {
+    it("표지를 핫링크하므로 목록만 있으면 status=success로 기록된다", async () => {
       const result = await upsertIngestBatch("bestseller", "yes24", new Date(), [
         { title: "통합테스트 도서 D", rank: 1, coverSourceUrl: "https://example.com/a.jpg" },
       ]);
-      expect(result.status).toBe("partial");
+      expect(result.status).toBe("success");
 
       const latestRuns = await db
         .select()

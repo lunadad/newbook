@@ -89,8 +89,9 @@ async function resolveBookId(tx: Tx, item: IngestItem): Promise<number> {
 }
 
 function computeStatus(items: IngestItem[]): RunStatus {
-  const hasMissingCover = items.some((item) => item.coverSourceUrl && !item.coverBlobUrl);
-  return hasMissingCover ? "partial" : "success";
+  // 표지를 Blob에 올리지 않고 원본 URL을 핫링크하므로 "표지 업로드 부분 실패(partial)" 개념이
+  // 사라졌다. 목록을 정상 수집했으면 success다(수집 자체 실패는 상위에서 failed로 기록).
+  return items.length > 0 ? "success" : "failed";
 }
 
 export async function upsertIngestBatch(
