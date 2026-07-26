@@ -25,9 +25,9 @@ export function VendorCard({
   status: VendorStatus;
 }) {
   return (
-    <section className="rounded-2xl border border-border bg-surface p-4 flex flex-col gap-3">
+    <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 shadow-[0_1px_0_rgba(0,0,0,0.02)] sm:p-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-bold text-foreground">{VENDOR_LABEL[vendor]}</h2>
+        <h2 className="text-[17px] font-bold tracking-[-0.02em] text-foreground">{VENDOR_LABEL[vendor]}</h2>
         <StatusBadge status={status} />
       </div>
 
@@ -36,12 +36,12 @@ export function VendorCard({
       ) : (
         <ul className="flex flex-col divide-y divide-border">
           {items.map((item) => (
-            <li key={item.slotNo} className="flex gap-3 py-3 first:pt-0 last:pb-0">
+            <li key={item.slotNo} className="flex gap-3.5 py-3.5 first:pt-0 last:pb-0">
               <a
                 href={item.sourceUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="shrink-0 w-16 h-24 rounded-lg overflow-hidden bg-surface-muted relative"
+                className="relative h-24 w-16 shrink-0 overflow-hidden rounded-lg bg-surface-muted shadow-sm"
               >
                 {item.coverImageUrl ? (
                   <Image
@@ -59,7 +59,7 @@ export function VendorCard({
                     href={item.sourceUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-medium text-foreground hover:text-accent line-clamp-2"
+                    className="line-clamp-2 rounded text-[15px] font-semibold leading-snug text-foreground hover:text-accent"
                   >
                     {item.title}
                   </a>
@@ -73,7 +73,7 @@ export function VendorCard({
                   {[item.author, item.publisher].filter(Boolean).join(" · ")}
                 </p>
                 {item.comment ? (
-                  <p className="text-xs text-foreground-subtle mt-1 line-clamp-2">{item.comment}</p>
+                  <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-foreground-subtle">{item.comment}</p>
                 ) : null}
               </div>
             </li>

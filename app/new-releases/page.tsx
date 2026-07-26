@@ -24,8 +24,12 @@ export default async function NewReleasesPage() {
   >;
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-bold">문학 신상품</h1>
+    <div className="flex flex-col gap-6 sm:gap-8">
+      <header>
+        <p className="text-xs font-bold tracking-[0.14em] text-accent">NEW &amp; NOTEWORTHY</p>
+        <h1 className="mt-1 text-3xl font-black tracking-[-0.04em] sm:text-4xl">문학 신상품</h1>
+        <p className="mt-2 text-sm leading-relaxed text-foreground-muted">방금 서점에 도착한 새로운 문학 작품을 살펴보세요.</p>
+      </header>
       <VendorTabs vendors={VENDORS} statuses={statuses} panels={panels} />
     </div>
   );

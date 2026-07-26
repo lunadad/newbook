@@ -29,26 +29,28 @@ export function RankTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
-      <div className="min-w-[480px]">
+    <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_1px_0_rgba(0,0,0,0.02)]">
+      <div>
         {rows.map((row) => {
           const cover = (
             <span
-              className="shrink-0 rounded bg-surface-muted overflow-hidden relative block"
-              style={{ width: "36px", height: "52px" }}
+              className="relative block h-16 w-11 shrink-0 overflow-hidden rounded-md bg-surface-muted shadow-sm sm:h-[52px] sm:w-9"
             >
               {row.coverImageUrl ? (
-                <Image src={row.coverImageUrl} alt={row.title} fill sizes="36px" className="object-cover" />
+                <Image src={row.coverImageUrl} alt="" fill sizes="(max-width: 640px) 44px, 36px" className="object-cover" />
               ) : null}
             </span>
           );
           const meta = (
             <div className="min-w-0">
-              <p className="text-sm font-medium text-foreground line-clamp-1 group-hover:text-accent transition-colors">
+              <p className="line-clamp-2 text-[15px] font-semibold leading-snug text-foreground transition-colors group-hover:text-accent sm:line-clamp-1 sm:text-sm">
                 {row.title}
               </p>
-              <p className="text-xs text-foreground-muted line-clamp-1">
+              <p className="mt-1 line-clamp-1 text-xs text-foreground-muted">
                 {[row.author, row.publisher].filter(Boolean).join(" · ")}
+              </p>
+              <p className="mt-1.5 text-xs font-semibold text-foreground sm:hidden">
+                {formatPrice(row.price, currency)}
               </p>
             </div>
           );
@@ -56,16 +58,17 @@ export function RankTable({
           return (
             <div
               key={row.rank}
-              className="grid items-center gap-3 px-4 py-3 border-b border-border last:border-b-0"
-              style={{ gridTemplateColumns: "36px minmax(0,1fr) 88px" }}
+              className="grid grid-cols-[28px_minmax(0,1fr)] items-center gap-3 border-b border-border px-3 py-3.5 last:border-b-0 sm:grid-cols-[36px_minmax(0,1fr)_88px] sm:px-4 sm:py-3"
             >
-              <span className="text-sm font-bold text-foreground-subtle text-center">{row.rank}</span>
+              <span className={`text-center text-sm font-black ${row.rank <= 3 ? "text-accent" : "text-foreground-subtle"}`}>
+                {row.rank}
+              </span>
               {row.sourceUrl ? (
                 <a
                   href={row.sourceUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="group flex items-center gap-3 min-w-0"
+                  className="group flex min-w-0 items-center gap-3 rounded-lg"
                 >
                   {cover}
                   {meta}
@@ -76,7 +79,9 @@ export function RankTable({
                   {meta}
                 </div>
               )}
-              <span className="text-sm text-foreground text-right">{formatPrice(row.price, currency)}</span>
+              <span className="hidden text-right text-sm font-medium text-foreground sm:block">
+                {formatPrice(row.price, currency)}
+              </span>
             </div>
           );
         })}

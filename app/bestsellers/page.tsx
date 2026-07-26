@@ -28,8 +28,12 @@ export default async function BestsellersPage() {
   >;
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-bold">실시간 베스트셀러</h1>
+    <div className="flex flex-col gap-6 sm:gap-8">
+      <header>
+        <p className="text-xs font-bold tracking-[0.14em] text-accent">TRENDING NOW</p>
+        <h1 className="mt-1 text-3xl font-black tracking-[-0.04em] sm:text-4xl">실시간 베스트셀러</h1>
+        <p className="mt-2 text-sm leading-relaxed text-foreground-muted">지금 독자들이 가장 많이 찾는 책의 흐름을 확인하세요.</p>
+      </header>
       <VendorTabs vendors={BESTSELLER_VENDORS} statuses={statuses} panels={panels} />
     </div>
   );

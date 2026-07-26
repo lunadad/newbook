@@ -2,17 +2,17 @@
 @import "pretendard/dist/web/variable/pretendardvariable.css";
 
 :root {
-  --background: #f9fafb;
+  --background: #f6f6f3;
   --surface: #ffffff;
-  --surface-muted: #f3f4f6;
-  --border: #e5e7eb;
-  --foreground: #1f2937;
-  --foreground-muted: #6b7280;
-  --foreground-subtle: #9ca3af;
-  --accent: #2563eb;
+  --surface-muted: #f0f1ed;
+  --border: #e3e4de;
+  --foreground: #18201c;
+  --foreground-muted: #626a65;
+  --foreground-subtle: #929a94;
+  --accent: #0e7251;
   --accent-foreground: #ffffff;
-  --tag-bg: #fff5ec;
-  --tag-foreground: #a54800;
+  --tag-bg: #fff1dc;
+  --tag-foreground: #8d4d05;
   --status-ok: #16a34a;
   --status-stale: #f59e0b;
   --status-failed: #dc2626;
@@ -20,15 +20,15 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #050608;
-    --surface: #0b0e14;
-    --surface-muted: #11151d;
-    --border: #1f2530;
-    --foreground: #e5e7eb;
-    --foreground-muted: #9ca3af;
-    --foreground-subtle: #6b7280;
-    --accent: #2b7fff;
-    --accent-foreground: #050608;
+    --background: #101411;
+    --surface: #171c18;
+    --surface-muted: #202621;
+    --border: #2c342e;
+    --foreground: #edf2ee;
+    --foreground-muted: #adb6af;
+    --foreground-subtle: #78827a;
+    --accent: #4bd1a0;
+    --accent-foreground: #0b2119;
     --tag-bg: #2a1c10;
     --tag-foreground: #f59e0b;
     --status-ok: #4ade80;
@@ -59,4 +59,33 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+a,
+button {
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.mobile-bottom-nav {
+  padding-bottom: max(0.4rem, env(safe-area-inset-bottom));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
