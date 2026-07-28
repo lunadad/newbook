@@ -49,13 +49,32 @@ npx tsx scripts/jobs/runTodayBook.ts
 ## 아키텍처
 
 ```
-GitHub Actions (4개 워크플로우, 크론)
+로컬 헤르메스 cron (scripts/jobs/run*.ts 실행)
   → lib/scraping/*  (cheerio 정적 파싱 5종 + Playwright 2종 + 알라딘 OpenAPI/폴백)
-  → lib/images/uploadCover.ts  (Vercel Blob 업로드)
   → POST /api/ingest/*  (Bearer 인증 → zod 검증 → Neon upsert, lib/ingest/upsert.ts)
 
 Vercel (Next.js App Router)
   → app/(dashboard 4 pages)  서버 컴포넌트에서 Neon 직접 조회 (Drizzle ORM)
+  → 표지는 벤더 CDN 원본 URL을 그대로 핫링크 (images.unoptimized)
 ```
+
+`.github/workflows/*.yml`은 `workflow_dispatch` 수동 실행용으로만 남아 있다(스케줄은 주석 처리).
+GitHub이 스케줄 워크플로우를 상시 86~109분 지연시켜 갱신이 늦었기 때문에 로컬 헤르메스로 옮겼다.
+
+### 수집 스케줄
+
+| 작업 | 주기 | 스크립트 |
+|---|---|---|
+| 오늘의 책 — 예스24·알라딘 | 5분 (06~23시) | `newbook_today_book_watch_http.sh` |
+| 오늘의 책 — 교보문고 | 10분 (06~23시) | `newbook_today_book_watch_kyobo.sh` |
+| 오늘의 책 — 전체 안전망 | 4시간 | `newbook_today_book.sh` |
+| 문학 신상품 | 30분 | `newbook_new_releases.sh` |
+| 실시간 베스트셀러 | 1시간 | `newbook_bestsellers.sh` |
+
+오늘의 책은 서점별 갱신 시각이 일정하지 않아(같은 날에도 교보문고는 16시 이전, 알라딘은 17시대에 바뀐 사례)
+갱신 시각을 추측한 좁은 크론 창 대신 **상시 짧은 주기 폴링 + 변경 게이트**를 쓴다.
+감시 실행은 `--if-changed`로 돌아, 직전 실행과 내용이 같으면(`lib/jobs/changeGate.ts`의 지문 비교)
+ingest를 건너뛰고 아무것도 출력하지 않는다 — DB 쓰기와 알림은 실제 갱신 때만 발생한다.
+지문 파일 위치는 `NEWBOOK_STATE_DIR`(기본 `~/.newbook/state`)로 바꿀 수 있다.
 
 자세한 내용은 [`docs/design.md`](docs/design.md) §4(아키텍처)·§5(데이터 모델) 참고.
