@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { HeroCarousel } from "@/components/HeroCarousel";
 import { VendorCard } from "@/components/VendorCard";
 import { StatusBadge } from "@/components/StatusBadge";
 import { getTodayBooksByVendor, VENDORS } from "@/lib/queries";
@@ -28,20 +28,7 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col gap-9 sm:gap-12">
-      <section className="relative aspect-[4/3] overflow-hidden rounded-[28px] bg-[#f5f0e7] shadow-[0_12px_40px_rgba(24,32,28,0.08)] sm:aspect-[2/1]">
-        <h1 className="sr-only">오늘 읽을 책을 가장 빠르게 발견하는 책 레이더</h1>
-        <Image
-          src="/reading-bear-hero.jpg"
-          alt="커다란 초록색 책을 읽으며 미소 짓는 크림색 곰"
-          fill
-          priority
-          sizes="(max-width: 640px) calc(100vw - 32px), 976px"
-          className="object-cover"
-        />
-        <p className="absolute left-4 top-4 rounded-full border border-white/70 bg-white/80 px-3.5 py-2 text-xs font-bold tracking-[-0.01em] text-foreground shadow-sm backdrop-blur sm:left-6 sm:top-6 sm:text-sm">
-          오늘도 책과 함께
-        </p>
-      </section>
+      <HeroCarousel />
 
       <section className="flex flex-col gap-4 sm:gap-5">
         <div className="flex items-center justify-between">
