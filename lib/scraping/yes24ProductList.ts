@@ -7,19 +7,29 @@ function parsePrice(text: string): number | undefined {
   return digits ? Number(digits) : undefined;
 }
 
+/** 신상품 페이지의 실제 목록. 상단 추천 히어로(`.newGoodsSubBox`)는 이 밖에 있다. */
+export const YES24_NEW_LIST_SELECTOR = "#yesNewList";
+/** 실시간 베스트셀러 페이지의 순위 목록. */
+export const YES24_BEST_LIST_SELECTOR = "#yesBestList";
+
 /**
  * 예스24 카테고리형 목록 페이지(신상품/실시간베스트셀러) 공용 파서.
  * 두 페이지 모두 `.itemUnit` 반복 구조를 공유한다(실측 확인).
+ *
+ * `listSelector`로 목록 컨테이너를 반드시 지정한다 — `.itemUnit`만 훑으면 신상품 페이지
+ * 상단 추천 히어로 4권까지 섞여 들어온다. 히어로는 편집 추천이라 등록일순도 아니고,
+ * 목록에 있는 책을 다시 노출해 중복까지 만든다(실측: 전체 28 = 히어로 4 + 목록 24).
  */
 export function parseYes24ProductListHtml(
   html: string,
   maxItems: number,
+  listSelector: string,
 ): NormalizedRankedItem[] {
   const $ = cheerio.load(html);
 
   const items: NormalizedRankedItem[] = [];
 
-  $(".itemUnit").each((i, el) => {
+  $(listSelector).find(".itemUnit").each((i, el) => {
     if (items.length >= maxItems) return;
     const node = $(el);
     const title = node.find(".gd_name").first().text().trim();
@@ -53,7 +63,7 @@ export function parseYes24ProductListHtml(
   });
 
   if (items.length === 0) {
-    throw new Error(`예스24 상품 목록 파싱 결과 0건 — 선택자 확인 필요`);
+    throw new Error(`예스24 상품 목록 파싱 결과 0건 — 선택자 확인 필요 (${listSelector})`);
   }
 
   return items;
@@ -62,9 +72,10 @@ export function parseYes24ProductListHtml(
 export async function scrapeYes24ProductList(
   url: string,
   maxItems: number,
+  listSelector: string,
 ): Promise<NormalizedRankedItem[]> {
   const html = await fetchText(url);
-  return parseYes24ProductListHtml(html, maxItems);
+  return parseYes24ProductListHtml(html, maxItems, listSelector);
 }
 
 export const scrapeYes24NewProduct = () =>
@@ -73,10 +84,12 @@ export const scrapeYes24NewProduct = () =>
     // 대비해 명시적으로 지정한다(사용자 요청: 최신순 정렬 보장).
     "https://www.yes24.com/product/category/newproduct?categoryNumber=001001046&sortTp=01",
     30,
+    YES24_NEW_LIST_SELECTOR,
   );
 
 export const scrapeYes24Bestseller = () =>
   scrapeYes24ProductList(
     "https://www.yes24.com/product/category/realtimebestseller?categoryNumber=001001046",
     10,
+    YES24_BEST_LIST_SELECTOR,
   );
