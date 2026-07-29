@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { RankTable } from "@/components/RankTable";
 import { VendorTabs } from "@/components/VendorTabs";
 import { getNewReleasesByVendor, VENDORS } from "@/lib/queries";
@@ -5,6 +6,10 @@ import { getVendorStatus } from "@/lib/status";
 import type { Vendor } from "@/db/schema";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "문학 신상품 | 책 레이더",
+  description: "예스24·교보문고·알라딘에 새로 도착한 문학 작품을 모아보세요.",
+};
 
 export default async function NewReleasesPage() {
   const entries = await Promise.all(

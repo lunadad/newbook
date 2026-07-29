@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { VendorCard } from "@/components/VendorCard";
 import { getTodayBooksByVendor, VENDORS } from "@/lib/queries";
 import { getVendorStatus } from "@/lib/status";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "오늘의 책 | 책 레이더",
+  description: "예스24·교보문고·알라딘이 오늘 주목한 책을 한눈에 확인하세요.",
+};
 
 export default async function TodayBookPage() {
   const sections = await Promise.all(

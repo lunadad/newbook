@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { RankTable } from "@/components/RankTable";
 import { VendorTabs } from "@/components/VendorTabs";
 import { getBestsellersByVendor } from "@/lib/queries";
@@ -6,6 +7,10 @@ import { getVendorStatus } from "@/lib/status";
 import type { Vendor } from "@/db/schema";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "실시간 베스트셀러 | 책 레이더",
+  description: "주요 서점의 실시간 베스트셀러 순위와 독자들의 관심 흐름을 확인하세요.",
+};
 
 export default async function BestsellersPage() {
   const entries = await Promise.all(
