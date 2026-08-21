@@ -1,0 +1,22 @@
+name: literature-news
+
+# 정기 갱신은 로컬 헤르메스 cron이 매일 08:00 KST에 담당한다.
+# GitHub Actions는 수동 백업/디버깅 용도로만 유지한다.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/jobs/runLiteratureNews.ts
+        env:
+          CRON_INGEST_SECRET: ${{ secrets.CRON_INGEST_SECRET }}
+          INGEST_BASE_URL: ${{ secrets.INGEST_BASE_URL }}

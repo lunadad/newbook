@@ -1,6 +1,6 @@
-import { asc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
-import { books, vendorTodayBook, vendorNewRelease, vendorBestseller, type Vendor } from "@/db/schema";
+import { books, literatureNews, newsCollectionRun, vendorTodayBook, vendorNewRelease, vendorBestseller, type Vendor } from "@/db/schema";
 
 export { VENDORS, VENDOR_LABEL } from "@/lib/vendors";
 
@@ -55,4 +55,21 @@ export async function getBestsellersByVendor(vendor: Vendor) {
     .innerJoin(books, eq(vendorBestseller.bookId, books.id))
     .where(eq(vendorBestseller.vendor, vendor))
     .orderBy(asc(vendorBestseller.rank));
+}
+
+export async function getLatestLiteratureNews(limit = 40) {
+  return db
+    .select()
+    .from(literatureNews)
+    .orderBy(desc(literatureNews.publishedAt))
+    .limit(limit);
+}
+
+export async function getLatestNewsCollectionRun() {
+  const [latest] = await db
+    .select()
+    .from(newsCollectionRun)
+    .orderBy(desc(newsCollectionRun.finishedAt))
+    .limit(1);
+  return latest ?? null;
 }

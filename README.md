@@ -31,6 +31,7 @@ DATABASE_URL=postgres://$(whoami)@localhost:5432/newbook_dev npx drizzle-kit mig
 npx tsx scripts/jobs/runBestsellers.ts
 npx tsx scripts/jobs/runNewReleases.ts
 npx tsx scripts/jobs/runTodayBook.ts
+npx tsx scripts/jobs/runLiteratureNews.ts
 ```
 
 ## 배포 전 필요한 외부 계정/설정 (`docs/plan.md` "착수 전 확인" 참고)
@@ -70,6 +71,7 @@ GitHub이 스케줄 워크플로우를 상시 86~109분 지연시켜 갱신이 �
 | 오늘의 책 — 전체 안전망 | 4시간 (매일) | `newbook_today_book.sh` |
 | 문학 신상품 | 30분 | `newbook_new_releases.sh` |
 | 실시간 베스트셀러 | 1시간 | `newbook_bestsellers.sh` |
+| 문학 뉴스 | 매일 08:00 | `newbook_literature_news.sh` |
 
 오늘의 책은 3사 모두 **화·금 16:00~18:30**에만 갱신되지만, 그 안에서 **정확히 몇 시에 바뀌는지는 회차마다 다르다**
 (2026-07-28 화 기준 교보문고 16:05 이전 / 예스24 16:25 무렵 / 알라딘 17:50 무렵).

@@ -29,3 +29,20 @@ export const ingestRequestSchema = z.object({
 
 export type IngestItem = z.infer<typeof ingestItemSchema>;
 export type IngestRequest = z.infer<typeof ingestRequestSchema>;
+
+export const literatureNewsItemSchema = z.object({
+  externalId: z.string().min(1),
+  title: z.string().min(1),
+  publisher: z.string().min(1),
+  publisherType: z.enum(["general", "economy"]),
+  articleUrl: z.string().url(),
+  thumbnailUrl: z.string().url().optional(),
+  publishedAt: z.string().datetime(),
+});
+
+export const literatureNewsRequestSchema = z.object({
+  collectedAt: z.string().datetime(),
+  items: z.array(literatureNewsItemSchema).max(60),
+});
+
+export type LiteratureNewsItem = z.infer<typeof literatureNewsItemSchema>;

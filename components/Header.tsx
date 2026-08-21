@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { href: "/today-book", label: "오늘의 책", mobileLabel: "오늘", mark: "책" },
   { href: "/new-releases", label: "문학 신상품", mobileLabel: "신상품", mark: "N" },
   { href: "/bestsellers", label: "실시간 베스트셀러", mobileLabel: "베스트", mark: "↑" },
+  { href: "/literature-news", label: "문학 뉴스", mobileLabel: "뉴스", mark: "속" },
 ];
 
 export function Header() {
@@ -51,7 +52,7 @@ export function Header() {
       </header>
 
       <nav
-        className="mobile-bottom-nav fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-border/80 bg-surface/94 px-2 pt-1.5 backdrop-blur-xl sm:hidden"
+        className="mobile-bottom-nav fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border/80 bg-surface/94 px-1 pt-1.5 backdrop-blur-xl sm:hidden"
         aria-label="모바일 주요 메뉴"
       >
         {NAV_ITEMS.map((item) => {

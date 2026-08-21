@@ -112,3 +112,32 @@ export const scrapeRun = pgTable(
     check("status_check", sql`${table.status} IN ('success','partial','failed')`),
   ],
 );
+
+export const literatureNews = pgTable(
+  "literature_news",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    externalId: text("external_id").notNull().unique(),
+    title: text("title").notNull(),
+    publisher: text("publisher").notNull(),
+    publisherType: text("publisher_type").notNull(),
+    articleUrl: text("article_url").notNull(),
+    thumbnailUrl: text("thumbnail_url"),
+    publishedAt: timestamp("published_at", { withTimezone: true }).notNull(),
+    collectedAt: timestamp("collected_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    check("publisher_type_check", sql`${table.publisherType} IN ('general','economy')`),
+  ],
+);
+
+export const newsCollectionRun = pgTable("news_collection_run", {
+  id: bigserial("id", { mode: "number" }).primaryKey(),
+  status: text("status").notNull(),
+  itemCount: integer("item_count").notNull().default(0),
+  errorMessage: text("error_message"),
+  startedAt: timestamp("started_at", { withTimezone: true }).notNull(),
+  finishedAt: timestamp("finished_at", { withTimezone: true }).notNull(),
+}, (table) => [
+  check("news_run_status_check", sql`${table.status} IN ('success','failed')`),
+]);
