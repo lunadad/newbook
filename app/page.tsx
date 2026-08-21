@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { HeroCarousel } from "@/components/HeroCarousel";
+import { LiteratureNewsHero } from "@/components/LiteratureNewsHero";
 import { VendorCard } from "@/components/VendorCard";
 import { StatusBadge } from "@/components/StatusBadge";
-import { getTodayBooksByVendor, VENDORS } from "@/lib/queries";
+import { getLatestLiteratureNews, getTodayBooksByVendor, VENDORS } from "@/lib/queries";
 import { BESTSELLER_VENDORS } from "@/lib/vendors";
 import { getVendorStatus, getJobTypeStatus } from "@/lib/status";
 
@@ -14,7 +14,8 @@ const SECTION_LINKS = [
 ];
 
 export default async function HomePage() {
-  const [todayBookSections, newReleaseStatus, bestsellerStatus] = await Promise.all([
+  const [heroNews, todayBookSections, newReleaseStatus, bestsellerStatus] = await Promise.all([
+    getLatestLiteratureNews(2),
     Promise.all(
       VENDORS.map(async (vendor) => ({
         vendor,
@@ -28,7 +29,7 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col gap-9 sm:gap-12">
-      <HeroCarousel />
+      <LiteratureNewsHero items={heroNews} />
 
       <section className="flex flex-col gap-4 sm:gap-5">
         <div className="flex items-center justify-between">
