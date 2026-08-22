@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseLiteratureNews } from "@/lib/scraping/literatureNews";
+import { areLikelySameLiteratureNews, dedupeLiteratureNews } from "@/lib/scraping/literatureNewsDedupe";
 
 function card({
   id,
@@ -71,5 +72,23 @@ describe("parseLiteratureNews", () => {
       }),
     ].join("");
     expect(parseLiteratureNews(html)).toEqual([]);
+  });
+
+  it("표현이 다른 같은 사건은 하나로 묶고, 같은 인물의 별개 소식은 유지한다", () => {
+    expect(areLikelySameLiteratureNews(
+      "김승옥문학상 대상에 송지현 '누구보다 잘하는 일'",
+      "송지현, 김승옥문학상 대상 수상… '누구보다 잘하는 일'",
+    )).toBe(true);
+    expect(areLikelySameLiteratureNews(
+      "김금희 작가 새 소설집 출간",
+      "김금희 작가 문학 강연 개최",
+    )).toBe(false);
+
+    const unique = dedupeLiteratureNews([
+      { title: "김승옥문학상 대상에 송지현 누구보다 잘하는 일" },
+      { title: "송지현, 김승옥문학상 대상 수상 누구보다 잘하는 일" },
+      { title: "김금희 작가 새 소설집 출간" },
+    ]);
+    expect(unique).toHaveLength(2);
   });
 });

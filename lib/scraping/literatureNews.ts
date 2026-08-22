@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { load } from "cheerio";
 import type { LiteratureNewsItem } from "@/lib/ingest/schema";
 import { SCRAPER_USER_AGENT } from "./userAgent";
+import { areLikelySameLiteratureNews, dedupeLiteratureNews } from "./literatureNewsDedupe";
 
 export const NEWS_PUBLISHERS = {
   general: [
@@ -87,7 +88,6 @@ export function parseLiteratureNews(html: string): LiteratureNewsItem[] {
   const $ = load(html);
   const items: LiteratureNewsItem[] = [];
   const seen = new Set<string>();
-  const seenTitles = new Set<string>();
 
   $('img[src*="/api/attachments/"]').each((_, image) => {
     const card = $(image).closest("c-wiz");
@@ -105,10 +105,8 @@ export function parseLiteratureNews(html: string): LiteratureNewsItem[] {
     const googleUrl = new URL(relativeLink, GOOGLE_NEWS_BASE).toString();
     const articleUrl = originalArticleUrl(card.find("a[jslog]").first().attr("jslog")) ?? googleUrl;
     const externalId = externalIdOf(card.attr("jsdata"), articleUrl);
-    const normalizedTitle = title.replace(/[\s“”‘’'"…·.,!?()[\]{}:;_-]/g, "");
-    if (seen.has(externalId) || seenTitles.has(normalizedTitle)) return;
+    if (seen.has(externalId) || items.some((item) => areLikelySameLiteratureNews(item.title, title))) return;
     seen.add(externalId);
-    seenTitles.add(normalizedTitle);
 
     items.push({
       externalId,
@@ -121,9 +119,7 @@ export function parseLiteratureNews(html: string): LiteratureNewsItem[] {
     });
   });
 
-  return items
-    .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
-    .slice(0, 40);
+  return dedupeLiteratureNews(items.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))).slice(0, 40);
 }
 
 export async function scrapeLiteratureNews(): Promise<LiteratureNewsItem[]> {

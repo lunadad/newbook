@@ -2,6 +2,7 @@ import { lt } from "drizzle-orm";
 import { db } from "@/db/client";
 import { literatureNews, newsCollectionRun } from "@/db/schema";
 import type { LiteratureNewsItem } from "./schema";
+import { dedupeLiteratureNews } from "@/lib/scraping/literatureNewsDedupe";
 
 const RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
 
@@ -10,10 +11,11 @@ export async function upsertLiteratureNews(
   items: LiteratureNewsItem[],
 ): Promise<number> {
   const startedAt = new Date();
+  const uniqueItems = dedupeLiteratureNews(items);
 
   try {
     await db.transaction(async (tx) => {
-      for (const item of items) {
+      for (const item of uniqueItems) {
         await tx
           .insert(literatureNews)
           .values({
@@ -42,12 +44,12 @@ export async function upsertLiteratureNews(
 
       await tx.insert(newsCollectionRun).values({
         status: "success",
-        itemCount: items.length,
+        itemCount: uniqueItems.length,
         startedAt,
         finishedAt: new Date(),
       });
     });
-    return items.length;
+    return uniqueItems.length;
   } catch (error) {
     await db.insert(newsCollectionRun).values({
       status: "failed",

@@ -1,6 +1,7 @@
 import { asc, desc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { books, literatureNews, newsCollectionRun, vendorTodayBook, vendorNewRelease, vendorBestseller, type Vendor } from "@/db/schema";
+import { dedupeLiteratureNews } from "@/lib/scraping/literatureNewsDedupe";
 
 export { VENDORS, VENDOR_LABEL } from "@/lib/vendors";
 
@@ -58,11 +59,12 @@ export async function getBestsellersByVendor(vendor: Vendor) {
 }
 
 export async function getLatestLiteratureNews(limit = 40) {
-  return db
+  const rows = await db
     .select()
     .from(literatureNews)
     .orderBy(desc(literatureNews.publishedAt))
-    .limit(limit);
+    .limit(Math.max(limit * 3, 100));
+  return dedupeLiteratureNews(rows).slice(0, limit);
 }
 
 export async function getLatestNewsCollectionRun() {
