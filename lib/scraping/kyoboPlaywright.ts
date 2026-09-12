@@ -13,7 +13,18 @@ export async function withKyoboPage<T>(
 ): Promise<T> {
   let browser: Browser | undefined;
   try {
-    browser = await chromium.launch();
+    // Playwright가 업데이트되면 관리형 Chromium 캐시가 비어 있는 경우가 있다.
+    // 로컬 cron 환경에는 이미 설치된 Chrome이 있으므로 이를 폴백으로 사용해
+    // "Executable doesn't exist" 때문에 교보 수집 전체가 중단되지 않게 한다.
+    try {
+      browser = await chromium.launch();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!/Executable doesn't exist|Please run `npx playwright install/i.test(message)) {
+        throw error;
+      }
+      browser = await chromium.launch({ channel: "chrome" });
+    }
     const page = await browser.newPage({ userAgent: SCRAPER_USER_AGENT });
     page.setDefaultTimeout(PAGE_TIMEOUT_MS);
     await page.goto(url, { waitUntil: "networkidle", timeout: PAGE_TIMEOUT_MS });
