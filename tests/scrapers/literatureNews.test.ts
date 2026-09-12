@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseLiteratureNews } from "@/lib/scraping/literatureNews";
+import { parseLiteratureNews, parseLiteratureNewsRss } from "@/lib/scraping/literatureNews";
 import { areLikelySameLiteratureNews, dedupeLiteratureNews } from "@/lib/scraping/literatureNewsDedupe";
 
 function card({
@@ -90,5 +90,18 @@ describe("parseLiteratureNews", () => {
       { title: "김금희 작가 새 소설집 출간" },
     ]);
     expect(unique).toHaveLength(2);
+  });
+});
+
+describe("parseLiteratureNewsRss", () => {
+  it("HTML 검색이 제한될 때 RSS에서도 허용 언론사와 문학 기사만 파싱한다", () => {
+    const xml = `<?xml version="1.0"?><rss><channel>
+      <item><title>문학상 수상작 발표 - 문화일보</title><link>https://news.google.com/rss/articles/allowed</link><guid>allowed</guid><pubDate>Sat, 12 Sep 2026 01:00:00 GMT</pubDate><source>문화일보</source></item>
+      <item><title>문학 소식 - 연합뉴스</title><link>https://news.google.com/rss/articles/blocked</link><guid>blocked</guid><pubDate>Sat, 12 Sep 2026 00:30:00 GMT</pubDate><source>연합뉴스</source></item>
+    </channel></rss>`;
+    const items = parseLiteratureNewsRss(xml);
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({ title: "문학상 수상작 발표", publisher: "문화일보" });
+    expect(items[0].thumbnailUrl).toBeUndefined();
   });
 });

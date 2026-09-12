@@ -53,6 +53,7 @@ const GOOGLE_NEWS_BASE = "https://news.google.com";
 const SEARCH_QUERY = "(문학 OR 소설가 OR 시인 OR 시집 OR 문학상 OR 출판 OR 신간 OR 번역가 OR 서점 OR 도서) when:1d";
 
 export const LITERATURE_NEWS_SEARCH_URL = `${GOOGLE_NEWS_BASE}/search?q=${encodeURIComponent(SEARCH_QUERY)}&hl=ko&gl=KR&ceid=KR:ko`;
+export const LITERATURE_NEWS_RSS_URL = `${GOOGLE_NEWS_BASE}/rss/search?q=${encodeURIComponent(SEARCH_QUERY)}&hl=ko&gl=KR&ceid=KR:ko`;
 
 function isLiteratureTitle(title: string): boolean {
   return LITERATURE_TERMS.some((term) => title.includes(term))
@@ -122,11 +123,51 @@ export function parseLiteratureNews(html: string): LiteratureNewsItem[] {
   return dedupeLiteratureNews(items.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))).slice(0, 40);
 }
 
-export async function scrapeLiteratureNews(): Promise<LiteratureNewsItem[]> {
-  const response = await fetch(LITERATURE_NEWS_SEARCH_URL, {
-    headers: { "User-Agent": SCRAPER_USER_AGENT, "Accept-Language": "ko-KR,ko;q=0.9" },
-    signal: AbortSignal.timeout(20_000),
+/** Google News HTML 검색이 429를 반환할 때 사용하는 RSS 파서. */
+export function parseLiteratureNewsRss(xml: string): LiteratureNewsItem[] {
+  const $ = load(xml, { xmlMode: true });
+  const items: LiteratureNewsItem[] = [];
+  const seen = new Set<string>();
+
+  $("item").each((_, element) => {
+    const node = $(element);
+    const publisher = node.find("source").first().text().trim();
+    const publisherType = PUBLISHER_TYPE.get(publisher);
+    const rawTitle = node.find("title").first().text().replace(/\s+/g, " ").trim();
+    const title = rawTitle.replace(new RegExp(`\\s+-\\s+${publisher.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")}$`), "").trim();
+    const articleUrl = node.find("link").first().text().trim();
+    const publishedAt = node.find("pubDate").first().text().trim();
+    const externalId = node.find("guid").first().text().trim() || createHash("sha256").update(articleUrl).digest("hex").slice(0, 40);
+
+    if (!publisherType || !title || !isLiteratureTitle(title) || !articleUrl || !publishedAt || seen.has(externalId)) return;
+    const parsedDate = new Date(publishedAt);
+    if (Number.isNaN(parsedDate.getTime())) return;
+    if (items.some((item) => areLikelySameLiteratureNews(item.title, title))) return;
+
+    seen.add(externalId);
+    items.push({
+      externalId,
+      title,
+      publisher,
+      publisherType,
+      articleUrl,
+      publishedAt: parsedDate.toISOString(),
+    });
   });
-  if (!response.ok) throw new Error(`문학 뉴스 검색 실패: HTTP ${response.status}`);
-  return parseLiteratureNews(await response.text());
+
+  return dedupeLiteratureNews(items.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))).slice(0, 40);
+}
+
+export async function scrapeLiteratureNews(): Promise<LiteratureNewsItem[]> {
+  const headers = { "User-Agent": SCRAPER_USER_AGENT, "Accept-Language": "ko-KR,ko;q=0.9" };
+  const response = await fetch(LITERATURE_NEWS_SEARCH_URL, { headers, signal: AbortSignal.timeout(20_000) });
+  if (response.ok) return parseLiteratureNews(await response.text());
+
+  // Google News HTML 검색은 짧은 시간에 429가 발생한다. RSS는 같은 검색어를
+  // 제공하면서 제한이 별도로 적용되므로 수집 중단 대신 RSS로 전환한다.
+  const rssResponse = await fetch(LITERATURE_NEWS_RSS_URL, { headers, signal: AbortSignal.timeout(20_000) });
+  if (!rssResponse.ok) {
+    throw new Error(`문학 뉴스 검색 실패: HTML HTTP ${response.status}, RSS HTTP ${rssResponse.status}`);
+  }
+  return parseLiteratureNewsRss(await rssResponse.text());
 }
