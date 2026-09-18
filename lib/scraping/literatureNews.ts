@@ -3,6 +3,9 @@ import { load } from "cheerio";
 import type { LiteratureNewsItem } from "@/lib/ingest/schema";
 import { SCRAPER_USER_AGENT } from "./userAgent";
 import { areLikelySameLiteratureNews, dedupeLiteratureNews } from "./literatureNewsDedupe";
+import { isLiteratureTitle } from "./literatureNewsFilter";
+import { fetchArticleImageUrl } from "./articleImage";
+import { resolveGoogleNewsArticleUrl } from "./googleNewsUrl";
 
 export const NEWS_PUBLISHERS = {
   general: [
@@ -34,31 +37,11 @@ const PUBLISHER_TYPE = new Map<string, "general" | "economy">([
   ...NEWS_PUBLISHERS.economy.map((name) => [name, "economy"] as const),
 ]);
 
-const LITERATURE_TERMS = [
-  "문학",
-  "소설가",
-  "소설집",
-  "장편소설",
-  "단편소설",
-  "시인",
-  "시집",
-  "문학상",
-  "신간",
-  "출판",
-  "번역가",
-  "서점",
-];
-const FALSE_POSITIVES = ["문학경기장", "입소설", "연재소설", "전문학"];
 const GOOGLE_NEWS_BASE = "https://news.google.com";
 const SEARCH_QUERY = "(문학 OR 소설가 OR 시인 OR 시집 OR 문학상 OR 출판 OR 신간 OR 번역가 OR 서점 OR 도서) when:1d";
 
 export const LITERATURE_NEWS_SEARCH_URL = `${GOOGLE_NEWS_BASE}/search?q=${encodeURIComponent(SEARCH_QUERY)}&hl=ko&gl=KR&ceid=KR:ko`;
 export const LITERATURE_NEWS_RSS_URL = `${GOOGLE_NEWS_BASE}/rss/search?q=${encodeURIComponent(SEARCH_QUERY)}&hl=ko&gl=KR&ceid=KR:ko`;
-
-function isLiteratureTitle(title: string): boolean {
-  return LITERATURE_TERMS.some((term) => title.includes(term))
-    && !FALSE_POSITIVES.some((term) => title.includes(term));
-}
 
 function findUrl(value: unknown): string | null {
   if (typeof value === "string" && /^https?:\/\//.test(value)) return value;
@@ -158,10 +141,45 @@ export function parseLiteratureNewsRss(xml: string): LiteratureNewsItem[] {
   return dedupeLiteratureNews(items.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))).slice(0, 40);
 }
 
+// 워크플로 제한시간 10분 안에서 최대 40건을 처리해야 해 동시 요청 수를 6으로 둔다.
+const ENRICH_CONCURRENCY = 6;
+
+async function withArticleImage(item: LiteratureNewsItem): Promise<LiteratureNewsItem> {
+  try {
+    const articleUrl = (await resolveGoogleNewsArticleUrl(item.articleUrl)) ?? item.articleUrl;
+    const thumbnailUrl = await fetchArticleImageUrl(articleUrl);
+    return { ...item, articleUrl, thumbnailUrl: thumbnailUrl ?? item.thumbnailUrl };
+  } catch {
+    // 개별 기사 수집 실패가 전체 배치를 막지 않도록 원본 항목을 그대로 둔다.
+    return item;
+  }
+}
+
+/**
+ * RSS 항목에는 이미지가 없고 HTML 검색 썸네일은 구글이 잘라낸 저해상도 이미지다.
+ * 원문 링크를 복원한 뒤 기사 페이지의 대표 이미지(og:image)를 썸네일로 채운다.
+ */
+export async function enrichWithArticleImages(items: LiteratureNewsItem[]): Promise<LiteratureNewsItem[]> {
+  const enriched = [...items];
+  let cursor = 0;
+
+  await Promise.all(
+    Array.from({ length: Math.min(ENRICH_CONCURRENCY, enriched.length) }, async () => {
+      while (cursor < enriched.length) {
+        const index = cursor;
+        cursor += 1;
+        enriched[index] = await withArticleImage(enriched[index]);
+      }
+    }),
+  );
+
+  return enriched;
+}
+
 export async function scrapeLiteratureNews(): Promise<LiteratureNewsItem[]> {
   const headers = { "User-Agent": SCRAPER_USER_AGENT, "Accept-Language": "ko-KR,ko;q=0.9" };
   const response = await fetch(LITERATURE_NEWS_SEARCH_URL, { headers, signal: AbortSignal.timeout(20_000) });
-  if (response.ok) return parseLiteratureNews(await response.text());
+  if (response.ok) return enrichWithArticleImages(parseLiteratureNews(await response.text()));
 
   // Google News HTML 검색은 짧은 시간에 429가 발생한다. RSS는 같은 검색어를
   // 제공하면서 제한이 별도로 적용되므로 수집 중단 대신 RSS로 전환한다.
@@ -169,5 +187,5 @@ export async function scrapeLiteratureNews(): Promise<LiteratureNewsItem[]> {
   if (!rssResponse.ok) {
     throw new Error(`문학 뉴스 검색 실패: HTML HTTP ${response.status}, RSS HTTP ${rssResponse.status}`);
   }
-  return parseLiteratureNewsRss(await rssResponse.text());
+  return enrichWithArticleImages(parseLiteratureNewsRss(await rssResponse.text()));
 }
